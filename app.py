@@ -148,31 +148,49 @@ elif page == "Simulator":
             st.success(f"Predicted Sales: ${prediction:,.2f}")
 
 elif page == "Agent Chat":
-    st.title("Chat with the Orchestrator")
-    st.markdown("Ask about specific insights. (Note: Chat logic is currently simplified)")
+    st.title("🤖 Agentic BI Dashboard")
+    st.markdown("Ask questions in natural language and get insights with visualizations!")
+    
+    # Initialize Agentic BI Chat
+    from src.agents.agentic_bi_chat import AgenticBIChat
+    
+    if 'bi_chat' not in st.session_state:
+        st.session_state.bi_chat = AgenticBIChat(orch)
+        st.session_state.bi_chat.set_analysis_results(analysis, advanced)
     
     if "messages" not in st.session_state:
-        st.session_state.messages = [{"role": "assistant", "content": "I am the Orchestrator. I can ask the sub-agents for info. Try 'Show me ROI' or 'Analyze Categories'."}]
+        st.session_state.messages = [{
+            "role": "assistant", 
+            "content": "👋 Hi! I'm your Agentic BI Assistant. Ask me anything about your sales, ROI, brand health, or model performance!",
+            "chart": None
+        }]
 
+    # Display chat history
     for msg in st.session_state.messages:
-        st.chat_message(msg["role"]).write(msg["content"])
+        with st.chat_message(msg["role"]):
+            st.write(msg["content"])
+            if msg.get("chart"):
+                st.plotly_chart(msg["chart"], use_container_width=True)
 
-    if prompt := st.chat_input("Ask a question..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.chat_message("user").write(prompt)
+    # Chat input
+    if prompt := st.chat_input("Ask me anything about your data..."):
+        # Add user message
+        st.session_state.messages.append({"role": "user", "content": prompt, "chart": None})
+        with st.chat_message("user"):
+            st.write(prompt)
         
-        # Simple routing logic for the demo
-        response = "I'm not sure."
-        prompt_lower = prompt.lower()
+        # Get response from Agentic BI Chat
+        response = st.session_state.bi_chat.process_query(prompt)
         
-        if "roi" in prompt_lower:
-            response = "The MMX Agent reports the following Marginal ROI:\n" + str(analysis.get('roi'))
-        elif "category" in prompt_lower:
-            response = "The Explorer Agent found these categories:\n" + str(analysis.get('categories')['Category'].tolist())
-        elif "critique" in prompt_lower or "feedback" in prompt_lower:
-            response = "The Critique Agent says:\n" + "\n".join(analysis.get('feedback', []))
-        else:
-            response = "I can route your request to: MMX Agent (ROI), Explorer Agent (Categories), or Critique Agent (Feedback)."
+        # Add assistant response
+        st.session_state.messages.append({
+            "role": "assistant", 
+            "content": response['text'],
+            "chart": response.get('chart')
+        })
         
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        st.chat_message("assistant").write(response)
+        with st.chat_message("assistant"):
+            st.write(response['text'])
+            if response.get('chart'):
+                st.plotly_chart(response['chart'], use_container_width=True)
+
