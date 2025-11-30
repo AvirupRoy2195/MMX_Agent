@@ -1,85 +1,96 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
-from src.agent import MMXAgent
+from src.agents.orchestrator import Orchestrator
 
 # Page Config
-st.set_page_config(page_title="MMX Agent", layout="wide")
+st.set_page_config(page_title="MMX BI & Agent Tool", layout="wide")
 
-# Initialize Agent
+# Initialize Orchestrator
 @st.cache_resource
-def get_agent():
-    agent = MMXAgent()
-    agent.load_and_train()
-    return agent
+def get_orchestrator():
+    orch = Orchestrator()
+    return orch
 
-agent = get_agent()
+orch = get_orchestrator()
+
+# Run Analysis immediately
+if 'analysis' not in st.session_state:
+    with st.spinner("Orchestrator is coordinating agents..."):
+        st.session_state.analysis = orch.run_analysis()
+        st.session_state.plots = orch.get_plots(st.session_state.analysis)
+
+analysis = st.session_state.analysis
+plots = st.session_state.plots
 
 # Sidebar
-st.sidebar.title("MMX Agent 🤖")
-page = st.sidebar.radio("Navigate", ["Dashboard", "Simulator", "Chat"])
+st.sidebar.title("MMX Command Center 🚀")
+page = st.sidebar.radio("Mode", ["BI Dashboard", "MMX Lab", "Simulator", "Agent Chat"])
 
-if page == "Dashboard":
-    st.title("Marketing Mix Modeling Dashboard")
+if page == "BI Dashboard":
+    st.title("Business Intelligence Dashboard")
     
-    if agent.data is not None:
-        # Top Metrics
-        summary = agent.get_summary()
+    # Top KPIs
+    kpis = analysis.get('kpis', {})
+    if kpis:
         c1, c2, c3 = st.columns(3)
-        c1.metric("Total Sales", f"${summary['Total Sales']:,.0f}")
-        c2.metric("Total Media Spend", f"${summary['Total Spend']:,.0f}")
-        c3.metric("Model R²", f"{agent.training_results['r2']:.2f}")
+        c1.metric("Total Sales", f"${kpis.get('Total Sales', 0):,.0f}")
+        c2.metric("Total Media Spend", f"${kpis.get('Total Spend', 0):,.0f}")
+        c3.metric("Data Points", kpis.get('Data Points', 0))
+
+    # Row 1: Trend & Categories
+    r1c1, r1c2 = st.columns(2)
+    with r1c1:
+        st.plotly_chart(plots.get('trend'), use_container_width=True)
+    with r1c2:
+        st.plotly_chart(plots.get('categories'), use_container_width=True)
+
+    # Row 2: Correlations
+    st.subheader("Data Correlations")
+    st.plotly_chart(plots.get('correlation'), use_container_width=True)
+
+elif page == "MMX Lab":
+    st.title("Marketing Mix Modeling Lab")
+    
+    # Critique Section
+    with st.expander("Critique Agent Feedback 🧐", expanded=True):
+        for msg in analysis.get('feedback', []):
+            st.write(msg)
+            
+    # ROI & Contribution
+    r2c1, r2c2 = st.columns(2)
+    with r2c1:
+        st.plotly_chart(plots.get('roi'), use_container_width=True)
+    with r2c2:
+        st.plotly_chart(plots.get('contributions'), use_container_width=True)
         
-        # Sales vs Spend Over Time
-        st.subheader("Sales vs Media Spend Over Time")
-        df_plot = agent.data.copy()
-        # Create a 'Total Spend' column for plotting if not exists
-        media_cols = agent.model.features
-        df_plot['Total Media Spend'] = df_plot[media_cols].sum(axis=1)
-        
-        fig = px.line(df_plot, x='Date', y=['Total_Sales', 'Total Media Spend'], title="Sales vs Spend")
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # ROI Chart
-        st.subheader("Marketing Channel ROI (Marginal Contribution)")
-        rois = agent.get_roi_insights()
-        roi_df = pd.DataFrame(list(rois.items()), columns=['Channel', 'Coefficient'])
-        fig_roi = px.bar(roi_df, x='Channel', y='Coefficient', color='Coefficient', title="Impact of Spend on Sales")
-        st.plotly_chart(fig_roi, use_container_width=True)
-        
-    else:
-        st.error("Data could not be loaded. Please check the data directory.")
+    st.info("The Contribution chart shows the estimated total sales driven by each channel over the entire period.")
 
 elif page == "Simulator":
     st.title("Scenario Simulator")
     st.markdown("Adjust media spend to predict future sales.")
     
-    if agent.data is not None:
+    if orch.data is not None:
         inputs = {}
         cols = st.columns(3)
-        features = agent.model.features
+        # Get features from the trained model in MMX agent
+        features = orch.mmx.model.features
         
         # Get average spend as default
-        avg_spend = agent.data[features].mean()
+        avg_spend = orch.data[features].mean()
         
         for i, feature in enumerate(features):
             with cols[i % 3]:
                 inputs[feature] = st.number_input(f"{feature} Spend", value=float(avg_spend[feature]))
         
         if st.button("Simulate Sales"):
-            prediction = agent.simulate_scenario(inputs)
+            prediction = orch.simulate(inputs)
             st.success(f"Predicted Sales: ${prediction:,.2f}")
-            
-            # Compare with average
-            avg_sales = agent.data['Total_Sales'].mean()
-            diff = prediction - avg_sales
-            st.metric("Vs Average Monthly Sales", f"${diff:,.2f}", delta_color="normal")
 
-elif page == "Chat":
-    st.title("Chat with MMX Agent")
+elif page == "Agent Chat":
+    st.title("Chat with the Orchestrator")
+    st.markdown("Ask about specific insights. (Note: Chat logic is currently simplified)")
     
     if "messages" not in st.session_state:
-        st.session_state.messages = [{"role": "assistant", "content": "Hello! Ask me about ROI, Sales, or the Model."}]
+        st.session_state.messages = [{"role": "assistant", "content": "I am the Orchestrator. I can ask the sub-agents for info. Try 'Show me ROI' or 'Analyze Categories'."}]
 
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
@@ -88,7 +99,18 @@ elif page == "Chat":
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.chat_message("user").write(prompt)
         
-        response = agent.chat(prompt)
+        # Simple routing logic for the demo
+        response = "I'm not sure."
+        prompt_lower = prompt.lower()
+        
+        if "roi" in prompt_lower:
+            response = "The MMX Agent reports the following Marginal ROI:\n" + str(analysis.get('roi'))
+        elif "category" in prompt_lower:
+            response = "The Explorer Agent found these categories:\n" + str(analysis.get('categories')['Category'].tolist())
+        elif "critique" in prompt_lower or "feedback" in prompt_lower:
+            response = "The Critique Agent says:\n" + "\n".join(analysis.get('feedback', []))
+        else:
+            response = "I can route your request to: MMX Agent (ROI), Explorer Agent (Categories), or Critique Agent (Feedback)."
         
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.chat_message("assistant").write(response)
