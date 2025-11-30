@@ -2,12 +2,19 @@ class AgenticBIChat:
     """
     Enhanced chat agent that can answer questions AND generate visualizations dynamically.
     Combines natural language understanding with BI capabilities.
+    Includes NL to SQL for dynamic data queries.
     """
     
     def __init__(self, orchestrator):
         self.orch = orchestrator
         self.analysis = None
         self.advanced = None
+        self.nl_to_sql = None
+        
+        # Initialize NL to SQL if data is available
+        if self.orch.data is not None:
+            from src.utils.nl_to_sql import NLtoSQL
+            self.nl_to_sql = NLtoSQL(self.orch.data)
         
     def set_analysis_results(self, analysis, advanced):
         """Store analysis results for quick access."""
@@ -22,6 +29,25 @@ class AgenticBIChat:
             dict with 'text' and optional 'chart' keys
         """
         query_lower = query.lower()
+        
+        # Check if this is a SQL-style query (aggregations, filters, etc.)
+        sql_keywords = ['average', 'mean', 'sum', 'total', 'count', 'max', 'min', 'top', 'group by', 'where']
+        is_sql_query = any(keyword in query_lower for keyword in sql_keywords)
+        
+        if is_sql_query and self.nl_to_sql:
+            result = self.nl_to_sql.parse_and_execute(query_lower)
+            
+            if result.get('result') is not None and not result.get('error'):
+                text = f"**Query Result**\n\n"
+                text += f"SQL Equivalent: `{result['sql_equivalent']}`\n\n"
+                
+                if isinstance(result['result'], pd.DataFrame):
+                    text += "**Data:**\n\n"
+                    text += result['result'].to_markdown(index=False)
+                else:
+                    text += f"**Result:** {result['result']}"
+                
+                return {'text': text}
         
         # ROI Queries
         if "roi" in query_lower or "return on investment" in query_lower:
@@ -188,6 +214,13 @@ class AgenticBIChat:
 🔍 **Model Performance**
 - "Model accuracy"
 - "Compare models"
+
+🗃️ **SQL-Style Queries** (NEW!)
+- "Average sales by month"
+- "Total spend on TV"
+- "Top 5 months by sales"
+- "Count of data points"
+- "Show me Digital spend"
 
 I'll provide both insights AND visualizations!"""
             return {'text': text}
