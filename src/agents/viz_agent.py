@@ -34,3 +34,32 @@ class VizAgent:
         """Plots Correlation Heatmap."""
         fig = px.imshow(corr_matrix, text_auto=True, title="Spend vs Sales Correlation")
         return fig
+    
+    def plot_roi_decomposition(self, roi_decomp):
+        """Plots Short-term vs Long-term ROI."""
+        channels = list(roi_decomp.keys())
+        immediate = [roi_decomp[ch]['immediate'] for ch in channels]
+        longterm = [roi_decomp[ch]['longterm'] for ch in channels]
+        
+        fig = go.Figure(data=[
+            go.Bar(name='Immediate', x=channels, y=immediate),
+            go.Bar(name='Long-term (Adstock)', x=channels, y=longterm)
+        ])
+        fig.update_layout(barmode='stack', title="ROI Decomposition: Short-term vs Long-term")
+        return fig
+    
+    def plot_model_comparison(self, model_results):
+        """Plots comparison of model performance."""
+        models = list(model_results.keys())
+        r2_scores = [model_results[m]['r2'] for m in models]
+        
+        fig = px.bar(x=models, y=r2_scores, title="Model Comparison (R² Score)",
+                     labels={'x': 'Model', 'y': 'R² Score'})
+        fig.update_layout(yaxis_range=[0, 1])
+        return fig
+    
+    def plot_nps_trend(self, nps_data):
+        """Plots NPS trend over time."""
+        fig = px.line(nps_data, x='Date', y='NPS', title="Brand Health: NPS Trend",
+                      markers=True)
+        return fig

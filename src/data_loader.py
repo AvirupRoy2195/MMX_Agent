@@ -53,8 +53,12 @@ class DataLoader:
         
         media_cols = ['TV', 'Digital', 'Sponsorship', 'Content.Marketing', 'Online.marketing', 'Affiliates', 'SEM', 'Radio', 'Other']
         
-        # Filter for only relevant columns
-        final_df = df[['month', 'Date', 'Total_Sales'] + [c for c in media_cols if c in df.columns] + revenue_cols]
+        # Filter for only relevant columns (including NPS if available)
+        cols_to_keep = ['month', 'Date', 'Total_Sales'] + [c for c in media_cols if c in df.columns] + revenue_cols
+        if 'NPS' in df.columns:
+            cols_to_keep.append('NPS')
+        
+        final_df = df[cols_to_keep]
         
         # Fill NaNs with 0 for media spend
         final_df = final_df.fillna(0)

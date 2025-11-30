@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from src.agents.orchestrator import Orchestrator
 
 # Page Config
@@ -17,13 +18,15 @@ if 'analysis' not in st.session_state:
     with st.spinner("Orchestrator is coordinating agents..."):
         st.session_state.analysis = orch.run_analysis()
         st.session_state.plots = orch.get_plots(st.session_state.analysis)
+        st.session_state.advanced_analysis = orch.run_advanced_analysis()
 
 analysis = st.session_state.analysis
 plots = st.session_state.plots
+advanced = st.session_state.advanced_analysis
 
 # Sidebar
 st.sidebar.title("MMX Command Center 🚀")
-page = st.sidebar.radio("Mode", ["BI Dashboard", "MMX Lab", "Simulator", "Agent Chat"])
+page = st.sidebar.radio("Mode", ["BI Dashboard", "MMX Lab", "Advanced MMM", "Simulator", "Agent Chat"])
 
 if page == "BI Dashboard":
     st.title("Business Intelligence Dashboard")
@@ -63,6 +66,65 @@ elif page == "MMX Lab":
         st.plotly_chart(plots.get('contributions'), use_container_width=True)
         
     st.info("The Contribution chart shows the estimated total sales driven by each channel over the entire period.")
+
+elif page == "Advanced MMM":
+    st.title("Advanced Marketing Mix Modeling")
+    st.markdown("### Short-term vs Long-term Effects with Brand Equity")
+    
+    # Model Comparison
+    st.subheader("Model Performance Comparison")
+    model_comp = advanced.get('model_comparison', {})
+    
+    if model_comp:
+        comp_df = pd.DataFrame({
+            'Model': ['Immediate Only', 'With Adstock', 'Full (Adstock + Brand)'],
+            'R² Score': [model_comp['immediate']['r2'], model_comp['adstock']['r2'], model_comp['full']['r2']],
+            'RMSE': [model_comp['immediate']['rmse'], model_comp['adstock']['rmse'], model_comp['full']['rmse']]
+        })
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.dataframe(comp_df, use_container_width=True)
+        with c2:
+            fig_comp = orch.viz.plot_model_comparison(model_comp)
+            st.plotly_chart(fig_comp, use_container_width=True)
+    
+    # ROI Decomposition
+    st.subheader("ROI Decomposition: Short-term vs Long-term")
+    roi_decomp = advanced.get('roi_decomposition')
+    if roi_decomp:
+        fig_decomp = orch.viz.plot_roi_decomposition(roi_decomp)
+        st.plotly_chart(fig_decomp, use_container_width=True)
+        
+        with st.expander("View Detailed ROI Breakdown"):
+            decomp_df = pd.DataFrame(roi_decomp).T
+            st.dataframe(decomp_df, use_container_width=True)
+    
+    # Brand Equity Analysis
+    st.subheader("Brand Equity Analysis (NPS)")
+    
+    col1, col2, col3 = st.columns(3)
+    nps_stats = advanced.get('nps_stats', {})
+    if nps_stats:
+        col1.metric("Avg NPS", f"{nps_stats.get('mean', 0):.1f}")
+        col2.metric("NPS Range", f"{nps_stats.get('min', 0):.1f} - {nps_stats.get('max', 0):.1f}")
+        
+    nps_corr = advanced.get('nps_correlation')
+    if nps_corr:
+        col3.metric("NPS-Sales Correlation", f"{nps_corr:.2f}")
+    
+    # NPS Trend
+    nps_trend = orch.brand.get_nps_trend()
+    if nps_trend is not None:
+        fig_nps = orch.viz.plot_nps_trend(nps_trend)
+        st.plotly_chart(fig_nps, use_container_width=True)
+    
+    # Brand Impact
+    brand_impact = advanced.get('brand_impact')
+    if brand_impact:
+        st.info(f"📊 **Brand Impact**: Each 1-point increase in NPS is associated with ${brand_impact:,.0f} in additional sales.")
+
+
 
 elif page == "Simulator":
     st.title("Scenario Simulator")
