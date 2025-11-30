@@ -1,8 +1,12 @@
+import pandas as pd
+
 class AgenticBIChat:
     """
-    Enhanced chat agent that can answer questions AND generate visualizations dynamically.
-    Combines natural language understanding with BI capabilities.
-    Includes NL to SQL for dynamic data queries.
+    Enhanced chat agent with:
+    - Natural language understanding (LLM-powered)
+    - Conversational memory
+    - Dynamic visualizations
+    - NL to SQL
     """
     
     def __init__(self, orchestrator):
@@ -10,11 +14,21 @@ class AgenticBIChat:
         self.analysis = None
         self.advanced = None
         self.nl_to_sql = None
+        self.memory = None
+        self.llm = None
         
         # Initialize NL to SQL if data is available
         if self.orch.data is not None:
             from src.utils.nl_to_sql import NLtoSQL
             self.nl_to_sql = NLtoSQL(self.orch.data)
+        
+        # Initialize memory
+        from src.utils.memory import ConversationMemory
+        self.memory = ConversationMemory(max_history=10)
+        
+        # Initialize LLM (optional - works without API key)
+        from src.utils.llm_interface import LLMInterface
+        self.llm = LLMInterface()
         
     def set_analysis_results(self, analysis, advanced):
         """Store analysis results for quick access."""
@@ -23,11 +37,35 @@ class AgenticBIChat:
     
     def process_query(self, query):
         """
-        Process user query and return both text response and optional visualization.
+        Process user query with memory and LLM understanding.
         
         Returns:
             dict with 'text' and optional 'chart' keys
         """
+        # Resolve references using memory ("it", "that", "also", etc.)
+        if self.memory:
+            query = self.memory.resolve_reference(query)
+            context = self.memory.get_context_summary()
+        else:
+            context = ""
+        
+        # Use LLM to parse intent if available
+        if self.llm and self.llm.use_llm:
+            intent_data = self.llm.parse_intent(query, context)
+            query_type = intent_data.get('query_type', 'help')
+            entities = intent_data.get('entities', {})
+            
+            # Update memory with entities
+            if self.memory:
+                self.memory.update_context(
+                    query_type=query_type,
+                    channels=entities.get('channels', []),
+                    metrics=entities.get('metrics', [])
+                )
+        else:
+            # Fallback to keyword matching
+            query_type = self._detect_query_type(query)
+        
         query_lower = query.lower()
         
         # Check if this is a SQL-style query (aggregations, filters, etc.)
@@ -222,5 +260,29 @@ class AgenticBIChat:
 - "Count of data points"
 - "Show me Digital spend"
 
+
 I'll provide both insights AND visualizations!"""
             return {'text': text}
+    
+    def _detect_query_type(self, query):
+        """Fallback query type detection using keywords."""
+        query_lower = query.lower()
+        
+        if "roi" in query_lower:
+            return "roi"
+        elif "sales" in query_lower:
+            return "sales"
+        elif "correlation" in query_lower:
+            return "correlation"
+        elif "contribution" in query_lower:
+            return "contribution"
+        elif "brand" in query_lower or "nps" in query_lower:
+            return "brand"
+        elif "model" in query_lower:
+            return "model"
+        elif "spend mix" in query_lower or "budget" in query_lower:
+            return "budget"
+        elif "efficiency" in query_lower:
+            return "efficiency"
+        else:
+            return "help"

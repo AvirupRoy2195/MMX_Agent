@@ -75,8 +75,17 @@ if prompt := st.chat_input("Ask me anything about your marketing data..."):
     with st.chat_message("user"):
         st.markdown(prompt)
     
+    # Add to memory
+    if hasattr(st.session_state.bi_chat, 'memory') and st.session_state.bi_chat.memory:
+        st.session_state.bi_chat.memory.add_message('user', prompt)
+    
     # Get response from Agentic BI Chat
     response = st.session_state.bi_chat.process_query(prompt)
+    
+    # Add to memory
+    if hasattr(st.session_state.bi_chat, 'memory') and st.session_state.bi_chat.memory:
+        st.session_state.bi_chat.memory.add_message('assistant', response['text'], 
+                                                     {'has_chart': response.get('chart') is not None})
     
     # Add assistant response
     st.session_state.messages.append({
