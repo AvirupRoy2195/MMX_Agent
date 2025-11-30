@@ -63,3 +63,44 @@ class VizAgent:
         fig = px.line(nps_data, x='Date', y='NPS', title="Brand Health: NPS Trend",
                       markers=True)
         return fig
+    
+    def plot_spend_mix(self, data):
+        """Plots media spend distribution as a pie chart."""
+        media_cols = ['TV', 'Digital', 'Sponsorship', 'Content.Marketing', 'Online.marketing', 'Affiliates', 'SEM', 'Radio', 'Other']
+        existing_media = [c for c in media_cols if c in data.columns]
+        
+        spend_totals = data[existing_media].sum()
+        spend_df = pd.DataFrame({
+            'Channel': spend_totals.index,
+            'Spend': spend_totals.values
+        })
+        
+        fig = px.pie(spend_df, values='Spend', names='Channel', 
+                     title="Media Spend Distribution",
+                     hole=0.4)  # Donut chart
+        return fig
+    
+    def plot_channel_efficiency(self, data, roi_dict):
+        """Plots channel efficiency (Spend vs ROI scatter)."""
+        media_cols = ['TV', 'Digital', 'Sponsorship', 'Content.Marketing', 'Online.marketing', 'Affiliates', 'SEM', 'Radio', 'Other']
+        existing_media = [c for c in media_cols if c in data.columns]
+        
+        spend_totals = data[existing_media].sum()
+        
+        efficiency_data = []
+        for channel in existing_media:
+            if channel in roi_dict:
+                efficiency_data.append({
+                    'Channel': channel,
+                    'Total Spend': spend_totals[channel],
+                    'ROI': roi_dict[channel]
+                })
+        
+        efficiency_df = pd.DataFrame(efficiency_data)
+        
+        fig = px.scatter(efficiency_df, x='Total Spend', y='ROI', 
+                        text='Channel', size='Total Spend',
+                        title="Channel Efficiency: Spend vs ROI",
+                        labels={'Total Spend': 'Total Spend ($)', 'ROI': 'Marginal ROI'})
+        fig.update_traces(textposition='top center')
+        return fig

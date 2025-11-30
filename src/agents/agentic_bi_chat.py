@@ -136,6 +136,23 @@ class AgenticBIChat:
                 text += f"{msg}\n\n"
             return {'text': text}
         
+        # Spend Mix Queries
+        elif "spend mix" in query_lower or "budget" in query_lower or "allocation" in query_lower:
+            text = "Here's how your media budget is allocated across channels."
+            chart = self.orch.viz.plot_spend_mix(self.orch.data)
+            return {'text': text, 'chart': chart}
+        
+        # Channel Efficiency Queries
+        elif "efficiency" in query_lower or "best channel" in query_lower or "optimize" in query_lower:
+            roi = self.analysis.get('roi', {})
+            text = "**Channel Efficiency Analysis**\n\n"
+            text += "This scatter plot shows each channel's total spend vs ROI. \n"
+            text += "Channels in the top-right are most efficient (high ROI, high spend). \n"
+            text += "Channels in the top-left have high ROI but low spend (opportunity to scale)."
+            
+            chart = self.orch.viz.plot_channel_efficiency(self.orch.data, roi)
+            return {'text': text, 'chart': chart}
+        
         # Help/Capabilities
         else:
             text = """**I'm your Agentic BI Assistant!** 🤖 Ask me about:
@@ -157,6 +174,12 @@ class AgenticBIChat:
 📈 **Correlations**
 - "Show correlations"
 - "Relationship between channels"
+
+💵 **Budget & Efficiency**
+- "Show me spend mix"
+- "Budget allocation"
+- "Channel efficiency"
+- "Which channel should I optimize?"
 
 🏆 **Brand Health**
 - "Show me NPS"
