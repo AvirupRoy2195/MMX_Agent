@@ -1,108 +1,223 @@
-# MMX BI & Agent Tool 🤖
+# MMX Agentic BI Assistant 🤖
 
-An intelligent **Multi-Agent Business Intelligence and Marketing Mix Modeling** tool built with Streamlit and Python. This system uses specialized AI agents to analyze sales data, understand media channel impact, and provide actionable insights.
+An intelligent **AI-powered Marketing Mix Modeling and Business Intelligence Agent** built with a multi-agent architecture. Ask questions in natural language and get insights with dynamic visualizations.
 
-## 🌟 Features
+## 🌟 Key Features
 
-### Multi-Agent Architecture
--   **Orchestrator**: Central coordinator managing all sub-agents
--   **Explorer Agent**: BI analytics (KPIs, categories, correlations)
--   **MMX Agent**: Marketing Mix Modeling (ROI, contributions, predictions)
--   **Visualization Agent**: Generates all charts and graphs
--   **Critique Agent**: Evaluates model quality and flags issues
+### Conversational BI Interface
+- **Single Agent Interface**: No complex dashboards - just chat with the AI
+- **Dynamic Visualizations**: Agent generates charts on-demand based on your questions
+- **Natural Language Queries**: Ask questions like "Show me ROI decomposition" or "Which channel should I optimize?"
 
-### Capabilities
-1.  **BI Dashboard**:
-    -   High-level KPIs (Total Sales, Spend, Data Points)
-    -   Sales trends over time
-    -   Revenue breakdown by product category
-    -   Correlation heatmaps between channels
+### Advanced Analytics Capabilities
 
-2.  **MMX Lab**:
-    -   Marginal ROI analysis for each media channel
-    -   Sales contribution decomposition
-    -   Model quality feedback from Critique Agent
+#### 1. Marketing Mix Modeling (MMM)
+- **Adstock Transformations**: Captures carryover effects of marketing spend
+- **ROI Decomposition**: Separates immediate vs long-term returns
+- **Multi-Model Comparison**: Compares 3 models (Immediate, Adstock, Full)
 
-3.  **Scenario Simulator**:
-    -   Predict future sales by adjusting media budgets
-    -   Compare against historical averages
+#### 2. Brand Equity Analysis
+- **NPS Tracking**: Monitor Net Promoter Score trends
+- **Brand Impact Quantification**: Measure sales lift per NPS point
+- **Correlation Analysis**: Understand NPS-Sales relationships
 
-4.  **Agent Chat**:
-    -   Natural language interface to query insights
-    -   Direct access to specialized agents
+#### 3. Business Intelligence
+- **Sales Analysis**: Category breakdowns, trends, totals
+- **Channel Performance**: ROI, contributions, efficiency metrics
+- **Budget Optimization**: Spend mix analysis, allocation recommendations
+- **Data Correlations**: Heatmaps showing channel relationships
+
+## 🏗️ Architecture
+
+### Multi-Agent System
+
+```mermaid
+graph TB
+    User[User] -->|Natural Language Query| UI[Streamlit Chat UI]
+    UI --> AgenticChat[Agentic BI Chat Agent]
+    
+    AgenticChat -->|Coordinates| Orch[Orchestrator]
+    
+    Orch --> Explorer[Explorer Agent<br/>BI Analytics]
+    Orch --> MMX[MMX Agent<br/>Basic Modeling]
+    Orch --> AdvMMM[Advanced MMM<br/>Adstock & Brand]
+    Orch --> Brand[Brand Agent<br/>NPS Analysis]
+    Orch --> Viz[Visualization Agent<br/>Chart Generation]
+    Orch --> Critique[Critique Agent<br/>Quality Checks]
+    
+    Explorer --> Data[(Data Layer<br/>CSV Files)]
+    MMX --> Data
+    AdvMMM --> Data
+    Brand --> Data
+    
+    AdvMMM --> Adstock[Adstock Utils<br/>Carryover Effects]
+    
+    Viz -->|Returns Charts| AgenticChat
+    AgenticChat -->|Response + Chart| UI
+    
+    style AgenticChat fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    style Orch fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+    style AdvMMM fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style Viz fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+```
+
+### Component Details
+
+#### **Agentic BI Chat** (`src/agents/agentic_bi_chat.py`)
+- Natural language understanding
+- Query routing to appropriate agents
+- Response formatting with visualizations
+
+#### **Orchestrator** (`src/agents/orchestrator.py`)
+- Central coordinator for all sub-agents
+- Runs analysis pipelines
+- Manages state and data flow
+
+#### **Specialized Agents**
+- **Explorer Agent**: KPIs, categories, correlations
+- **MMX Agent**: Basic linear regression modeling
+- **Advanced MMM**: Adstock transformations, multi-model comparison
+- **Brand Agent**: NPS analysis and trends
+- **Visualization Agent**: Dynamic chart generation
+- **Critique Agent**: Model quality evaluation
+
+#### **Data Layer** (`src/data_loader.py`)
+- Loads and cleans Kaggle dataset
+- Aggregates sales by category
+- Merges media spend with NPS data
+
+#### **Utilities**
+- **Adstock Utils** (`src/utils/adstock.py`): Geometric adstock transformations
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
--   Python 3.8 or higher
--   Git
+- Python 3.8+
+- Git
 
 ### Installation
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/AvirupRoy2195/MMX_Agent.git
-    cd MMX_Agent
-    ```
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/AvirupRoy2195/MMX_Agent.git
+   cd MMX_Agent
+   ```
 
-2.  **Install dependencies:**
-    ```bash
-    pip install streamlit pandas scikit-learn plotly kagglehub
-    ```
+2. **Install dependencies:**
+   ```bash
+   pip install streamlit pandas scikit-learn plotly kagglehub
+   ```
 
-3.  **Download Data:**
-    ```bash
-    python download_data.py
-    ```
+3. **Download data:**
+   ```bash
+   python download_data.py
+   ```
 
-### Running the App
-
-Launch the Streamlit application:
+### Running the Agent
 
 ```bash
 streamlit run app.py
 ```
 
-The app will open in your default browser at `http://localhost:8501`.
+The agent will open at `http://localhost:8501`
 
-## 📂 Project Structure
+## 💬 Sample Queries
+
+### Sales Analysis
+- "Show me sales by category"
+- "What's the sales trend over time?"
+- "Total sales"
+
+### ROI & Performance
+- "Show me ROI"
+- "ROI decomposition" *(short vs long-term)*
+- "Which channel has the best ROI?"
+
+### Budget Optimization
+- "Show me spend mix"
+- "Channel efficiency"
+- "Which channel should I optimize?"
+
+### Brand Health
+- "Show me NPS"
+- "Brand analysis"
+- "NPS trend"
+
+### Model Performance
+- "Compare models"
+- "Model accuracy"
+- "Show model performance"
+
+### Correlations
+- "Show correlations"
+- "Relationship between channels"
+
+## 📊 Technical Details
+
+### Models Implemented
+
+1. **Immediate Effects Model**
+   - Simple linear regression: `Sales = β₀ + Σ(βᵢ × Spendᵢ)`
+
+2. **Adstock Model**
+   - Includes carryover: `Sales = β₀ + Σ(βᵢ × Spendᵢ) + Σ(γᵢ × Adstock(Spendᵢ))`
+   - Adstock: `Adstock[t] = Spend[t] + decay × Adstock[t-1]`
+
+3. **Full Model**
+   - Adstock + Brand Equity: `Sales = ... + β_NPS × NPS`
+
+### Visualizations Available
+- Line charts (trends)
+- Bar charts (ROI, contributions)
+- Stacked bar charts (ROI decomposition)
+- Pie/Donut charts (spend mix, categories)
+- Scatter plots (channel efficiency)
+- Heatmaps (correlations)
+- Model comparison charts
+
+## 📁 Project Structure
 
 ```
 MMX_Agent/
-├── app.py                          # Main Streamlit UI
+├── app.py                          # Main Streamlit app (Agent UI)
 ├── src/
 │   ├── data_loader.py             # Data ingestion & cleaning
-│   ├── model.py                   # Linear Regression model
-│   └── agents/
-│       ├── orchestrator.py        # Central coordinator
-│       ├── explorer_agent.py      # BI analytics
-│       ├── mmx_agent.py           # Marketing Mix Modeling
-│       ├── viz_agent.py           # Visualization generation
-│       └── critique_agent.py      # Quality evaluation
+│   ├── model.py                   # Basic MMM model
+│   ├── agents/
+│   │   ├── orchestrator.py        # Central coordinator
+│   │   ├── agentic_bi_chat.py     # Conversational agent
+│   │   ├── explorer_agent.py      # BI analytics
+│   │   ├── mmx_agent.py           # Basic modeling
+│   │   ├── brand_agent.py         # NPS analysis
+│   │   ├── viz_agent.py           # Chart generation
+│   │   └── critique_agent.py      # Quality evaluation
+│   ├── models/
+│   │   └── advanced_mmm.py        # Adstock & multi-model
+│   └── utils/
+│       └── adstock.py             # Adstock transformations
 ├── data/                          # Dataset directory
 └── download_data.py               # Kaggle data downloader
 ```
 
-## 📊 Methodology
-
-### Marketing Mix Model
--   **Algorithm**: Linear Regression
--   **Target**: Total Sales (aggregated from revenue columns)
--   **Features**: Media spend across 9 channels (TV, Digital, Radio, etc.)
--   **ROI Calculation**: Model coefficients represent marginal sales per dollar spent
-
-### Quality Assurance
-The **Critique Agent** automatically evaluates:
--   Model accuracy (R² score)
--   Coefficient validity (flags negative ROI)
--   Data quality (sample size, missing values)
-
 ## 🎯 Use Cases
 
--   **Marketing Teams**: Optimize budget allocation across channels
--   **Data Analysts**: Explore sales patterns and correlations
--   **Business Leaders**: Understand ROI and make data-driven decisions
+- **Marketing Teams**: Optimize budget allocation, understand channel ROI
+- **Data Analysts**: Explore sales patterns, correlations, trends
+- **Business Leaders**: Make data-driven decisions with AI insights
+- **Researchers**: Study marketing mix modeling techniques
+
+## ⚠️ Limitations
+
+- **Small Sample Size**: Dataset has only 12 monthly observations
+- **Overfitting Risk**: Models achieve near-perfect fit (R² ≈ 1.0)
+- **Fixed Decay Rate**: Using 0.5 for all channels (ideally channel-specific)
+
+### Production Recommendations
+- Collect 2+ years of weekly data (100+ observations)
+- Optimize decay rates per channel
+- Add seasonality variables
+- Implement train/test validation
+- Apply regularization (Ridge/Lasso)
 
 ## 🤝 Contributing
 
@@ -111,3 +226,8 @@ Contributions are welcome! Please open an issue or submit a pull request.
 ## 📄 License
 
 This project is open-source and available under the MIT License.
+
+## 🔗 Links
+
+- **GitHub**: [https://github.com/AvirupRoy2195/MMX_Agent](https://github.com/AvirupRoy2195/MMX_Agent)
+- **Dataset**: [Kaggle - DT Mart Market Mix Modeling](https://www.kaggle.com/datasets/datatattle/dt-mart-market-mix-modeling)
