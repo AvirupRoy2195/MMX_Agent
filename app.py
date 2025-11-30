@@ -62,11 +62,11 @@ Type your question below! 👇""",
     }]
 
 # Display chat history
-for msg in st.session_state.messages:
+for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
         if msg.get("chart"):
-            st.plotly_chart(msg["chart"], use_container_width=True)
+            st.plotly_chart(msg["chart"], use_container_width=True, key=f"chart_{idx}")
 
 # Chat input
 if prompt := st.chat_input("Ask me anything about your marketing data..."):
@@ -88,5 +88,6 @@ if prompt := st.chat_input("Ask me anything about your marketing data..."):
     with st.chat_message("assistant"):
         st.markdown(response['text'])
         if response.get('chart'):
-            st.plotly_chart(response['chart'], use_container_width=True)
+            # Use length of messages as unique key for new chart
+            st.plotly_chart(response['chart'], use_container_width=True, key=f"chart_{len(st.session_state.messages)}")
 
