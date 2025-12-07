@@ -46,6 +46,22 @@ Inspired by [Karpathy's llm-council](https://github.com/karpathy/llm-council), t
 | **CritiqueAgent** | Gemini | Intelligent model critiques & recommendations |
 | **NL2SQL Agent** | Gemini | Natural language to Pandas query translation |
 | **Planning Agent** | Gemini | Complex query decomposition |
+| **SchemaMapperAgent** | Gemini | Table mapping & relationship detection |
+| **VizAgent** | - | Dynamic chart generation with NL2SQL |
+
+### 📋 Data Schema (YAML)
+
+The agent uses `config/data_schema.yaml` for field definitions:
+
+| Field | Description |
+|-------|-------------|
+| **ID** | Unique SKU identification |
+| **Order_ID** | Unique order identification |
+| **Order_Item_ID** | Item-level tracking |
+| **GMV** | Gross Merchandise Value (Revenue) |
+| **Units** | Number of units sold |
+| **MRP** | Maximum Retail Price |
+| **Procurement_SLA** | Time to procure (days) |
 
 ### Advanced Analytics Capabilities
 
