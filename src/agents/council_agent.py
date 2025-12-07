@@ -59,6 +59,10 @@ class CouncilAgent:
             print(f"✅ Council initialized with Gemini ({len(self.council_models)} models)")
         else:
             raise ValueError("Either OPENROUTER_API_KEY or GEMINI_API_KEY required")
+        
+        # Conversation memory
+        self.conversation_history: List[Dict[str, str]] = []
+        self.max_history = 10  # Keep last 10 exchanges
 
     def _call_openrouter(self, model: str, prompt: str) -> str:
         """Call OpenRouter API."""
@@ -228,13 +232,44 @@ Provide a definitive, synthesized answer taking the best insights and correcting
             return "Council unable to respond."
 
     def ask(self, query: str, context: str = "") -> Dict[str, Any]:
-        """Full council pipeline."""
+        """Full council pipeline with conversation memory."""
         print(f"\n🏛️ LLM COUNCIL CONVENED 🏛️")
         print(f"Mode: {'OpenRouter (diverse)' if self.use_openrouter else 'Gemini'}")
         
-        opinions = self.get_first_opinions(query, context)
-        reviews = self.get_peer_reviews(query, opinions)
-        final = self.synthesize_final(query, opinions, reviews, context)
+        # Build context with conversation history
+        history_context = ""
+        if self.conversation_history:
+            history_context = "\n\nPrevious conversation:\n"
+            for exchange in self.conversation_history[-5:]:  # Last 5 exchanges
+                history_context += f"User: {exchange['user']}\n"
+                history_context += f"Council: {exchange['response'][:200]}...\n\n"
         
-        print("✅ Council complete\n")
+        full_context = f"{context}\n{history_context}" if history_context else context
+        
+        opinions = self.get_first_opinions(query, full_context)
+        reviews = self.get_peer_reviews(query, opinions)
+        final = self.synthesize_final(query, opinions, reviews, full_context)
+        
+        # Store in memory
+        self.conversation_history.append({
+            "user": query,
+            "response": final
+        })
+        
+        # Trim history if needed
+        if len(self.conversation_history) > self.max_history:
+            self.conversation_history = self.conversation_history[-self.max_history:]
+        
+        print(f"✅ Council complete (Memory: {len(self.conversation_history)} exchanges)\n")
         return {"opinions": opinions, "reviews": reviews, "final_response": final}
+    
+    def clear_memory(self):
+        """Clear conversation history."""
+        self.conversation_history = []
+        print("🧹 Council memory cleared")
+    
+    def get_memory_summary(self) -> str:
+        """Get a summary of conversation history."""
+        if not self.conversation_history:
+            return "No conversation history."
+        return f"{len(self.conversation_history)} exchanges in memory."
