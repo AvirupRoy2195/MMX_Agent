@@ -15,6 +15,22 @@ An intelligent **AI-powered Marketing Mix Modeling and Business Intelligence Age
 - **NL2SQL Agent**: Converts natural language to Pandas code for flexible data queries
 - **LLM Integration**: Powered by Google Gemini for enhanced understanding
 
+### 🏛️ LLM Council (Karpathy Pattern)
+
+Inspired by [Karpathy's llm-council](https://github.com/karpathy/llm-council), this feature brings **multi-LLM deliberation** to your queries:
+
+| Stage | Description |
+|-------|-------------|
+| **1. First Opinions** | Query sent to 3 diverse LLMs (GPT-4o-mini, Claude-3, Gemini) |
+| **2. Peer Review** | Each LLM reviews and ranks the others' responses |
+| **3. Chairman Synthesis** | GPT-4o synthesizes the final, refined answer |
+
+**Key Features:**
+- 🌐 **Multi-Model Diversity**: Uses OpenRouter to access GPT, Claude, and Gemini
+- 🧠 **Conversation Memory**: Remembers last 10 exchanges for context
+- 📊 **Data-Aware**: Council receives real-time analysis metrics
+- 🔄 **Fallback**: Works with Gemini-only if OpenRouter unavailable
+
 ### Advanced Analytics Capabilities
 
 #### 1. Marketing Mix Modeling (MMM)
@@ -44,7 +60,10 @@ graph TB
     
     AgenticChat -->|Complex Queries| Planner[Planning Agent<br/>Query Decomposition]
     AgenticChat -->|Data Queries| NL2SQL[NL2SQL Agent<br/>Pandas Code Gen]
+    AgenticChat -->|Council Mode| Council[LLM Council<br/>Multi-Model Deliberation]
     AgenticChat -->|Coordinates| Orch[Orchestrator]
+    
+    Council -->|GPT + Claude + Gemini| AgenticChat
     
     Planner -->|Step Execution| AgenticChat
     NL2SQL -->|Results| AgenticChat
@@ -69,6 +88,7 @@ graph TB
     style AgenticChat fill:#1e88e5,stroke:#0d47a1,stroke-width:3px,color:#fff
     style Planner fill:#ff5722,stroke:#bf360c,stroke-width:2px,color:#fff
     style NL2SQL fill:#4caf50,stroke:#1b5e20,stroke-width:2px,color:#fff
+    style Council fill:#e91e63,stroke:#880e4f,stroke-width:2px,color:#fff
     style Orch fill:#ffc107,stroke:#ff6f00,stroke-width:2px,color:#000
     style AdvMMM fill:#00bcd4,stroke:#006064,stroke-width:2px,color:#fff
     style Viz fill:#9c27b0,stroke:#4a148c,stroke-width:2px,color:#fff
@@ -120,7 +140,7 @@ graph TB
 
 2. **Install dependencies:**
    ```bash
-   pip install streamlit pandas scikit-learn plotly kagglehub python-dotenv google-generativeai
+   pip install streamlit pandas scikit-learn plotly kagglehub python-dotenv google-generativeai httpx
    ```
 
 3. **Download data:**
@@ -146,6 +166,17 @@ To enable full Planning & NL2SQL capabilities:
    GEMINI_API_KEY=your_api_key_here
    ```
 3. Restart the app
+
+### OpenRouter Setup (For LLM Council)
+
+To enable the full **LLM Council** with diverse models (GPT, Claude, Gemini):
+
+1. Get an API key from [OpenRouter](https://openrouter.ai/)
+2. Add to your `.env` file:
+   ```
+   OPENROUTER_API_KEY=sk-or-v1-your_key_here
+   ```
+3. Enable "🏛️ Council Mode" in the sidebar
 
 ## 💬 Sample Queries
 
