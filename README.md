@@ -49,6 +49,31 @@ Inspired by [Karpathy's llm-council](https://github.com/karpathy/llm-council), t
 | **SchemaMapperAgent** | Gemini | Table mapping & relationship detection |
 | **VizAgent** | - | Dynamic chart generation with NL2SQL |
 
+### 🗺️ Schema Mapper Agent
+
+The **SchemaMapperAgent** intelligently maps user queries to the correct database tables and relationships:
+
+**How It Works:**
+1. User asks: *"Show me products sold during Diwali sale"*
+2. LLM analyzes query and identifies tables: `products`, `special_sales`
+3. Suggests join: `product_analytic_vertical ↔ Product`
+4. Returns properly mapped data
+
+**Tables Mapped:**
+| Table | Rows | Description |
+|-------|------|-------------|
+| `monthly_data` | 12 | Aggregated sales & spend |
+| `media_investment` | 12 | Media spend by channel |
+| `nps_scores` | 12 | Monthly NPS |
+| `products` | 75 | Product catalog |
+| `special_sales` | 44 | Sale events calendar |
+| `transactions` | 1M+ | Individual orders |
+
+**Relationships Detected:**
+- `monthly_data` ↔ `media_investment` (via month)
+- `monthly_data` ↔ `nps_scores` (via date)
+- `transactions` ↔ `products` (via product category)
+
 ### 📋 Data Schema (YAML)
 
 The agent uses `config/data_schema.yaml` for field definitions:
