@@ -44,14 +44,14 @@ class CouncilAgent:
         self.use_openrouter = bool(self.openrouter_key)
         
         if self.use_openrouter:
-            # Premium council: Top-tier models via OpenRouter
+            # Premium council: Exact models specified
             self.council_models = council_models or [
-                "anthropic/claude-sonnet-4",  # Claude Opus 4.5
-                "openai/gpt-4.1",               # GPT-5
-                "x-ai/grok-3-fast",            # Grok 4.1 Fast
+                "anthropic/claude-opus-4.5",   # Claude Opus 4.5
+                "openai/gpt-5",                 # GPT-5
+                "x-ai/grok-4.1-fast",           # Grok 4.1 Fast
             ]
-            self.chairman_model = chairman_model or "anthropic/claude-sonnet-4"
-            self.reasoning_model = "openai/gpt-4.1"  # Use GPT-5 for reasoning
+            self.chairman_model = chairman_model or "anthropic/claude-opus-4.5"
+            self.reasoning_model = "openai/gpt-5"  # Use GPT-5 for reasoning
             print(f"✅ Premium Council: {len(self.council_models)} top-tier models")
             print(f"   Models: {', '.join(self.council_models)}")
         elif self.gemini_key:
