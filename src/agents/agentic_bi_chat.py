@@ -35,6 +35,16 @@ class AgenticBIChat:
         from src.agents.planning_agent import PlanningAgent
         self.planner = PlanningAgent(self.orch, self.llm)
         
+        # Initialize Council Agent (optional - for complex queries)
+        self.council = None
+        self.use_council = False
+        try:
+            from src.agents.council_agent import CouncilAgent
+            self.council = CouncilAgent()
+            print("✅ LLM Council available")
+        except Exception as e:
+            print(f"⚠️ LLM Council not available: {e}")
+        
     def set_analysis_results(self, analysis, advanced):
         """Store analysis results for quick access."""
         self.analysis = analysis

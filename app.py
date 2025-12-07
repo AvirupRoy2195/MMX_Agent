@@ -33,6 +33,13 @@ else:
             st.cache_resource.clear()
             st.session_state.clear()
             st.rerun()
+    
+    # Council Mode Toggle
+    st.sidebar.markdown("---")
+    council_mode = st.sidebar.checkbox("🏛️ Council Mode", value=False, 
+                                        help="Use multiple LLMs to answer complex queries")
+    if council_mode:
+        st.sidebar.info("Council Mode: 3 LLMs + Chairman")
 # --------------------------------
 
 # Run Analysis immediately
@@ -102,7 +109,26 @@ if prompt := st.chat_input("Ask me anything about your marketing data..."):
         st.session_state.bi_chat.memory.add_message('user', prompt)
     
     # Get response from Agentic BI Chat
-    response = st.session_state.bi_chat.process_query(prompt)
+    # Check if Council Mode is enabled
+    if api_key and council_mode and st.session_state.bi_chat.council:
+        with st.spinner("🏛️ LLM Council deliberating..."):
+            council_result = st.session_state.bi_chat.council.ask(prompt)
+            response = {
+                'text': f"**🏛️ Council Decision**\n\n{council_result['final_response']}",
+                'chart': None
+            }
+            # Show intermediate results in expander
+            with st.expander("Council Deliberation Details"):
+                st.markdown("### First Opinions")
+                for opinion in council_result['opinions']:
+                    if opinion['response']:
+                        st.markdown(f"**{opinion['model']}**: {opinion['response'][:300]}...")
+                st.markdown("### Peer Reviews")
+                for review in council_result['reviews']:
+                    if review['review']:
+                        st.json(review['review'])
+    else:
+        response = st.session_state.bi_chat.process_query(prompt)
     
     # Add to memory
     if hasattr(st.session_state.bi_chat, 'memory') and st.session_state.bi_chat.memory:
