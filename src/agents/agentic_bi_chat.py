@@ -45,6 +45,11 @@ class AgenticBIChat:
         except Exception as e:
             print(f"⚠️ LLM Council not available: {e}")
         
+        # Link VizAgent with NL2SQL for dynamic visualizations
+        if hasattr(self.orch, 'viz') and self.nl_to_sql:
+            self.orch.viz.set_nl2sql(self.nl_to_sql)
+            print("✅ VizAgent linked with NL2SQL for dynamic charts")
+        
     def set_analysis_results(self, analysis, advanced):
         """Store analysis results for quick access."""
         self.analysis = analysis
@@ -101,6 +106,19 @@ class AgenticBIChat:
                 return {'text': combined_text, 'chart': final_chart}
         
         query_lower = query.lower()
+        
+        # Check if this is a visualization query with dynamic data request
+        viz_keywords = ['chart', 'plot', 'visualize', 'graph', 'show me a', 'draw', 'display']
+        is_viz_query = any(keyword in query_lower for keyword in viz_keywords)
+        
+        if is_viz_query and hasattr(self.orch, 'viz') and hasattr(self.orch.viz, 'create_dynamic_chart'):
+            viz_result = self.orch.viz.create_dynamic_chart(query)
+            
+            if viz_result.get('chart'):
+                return {
+                    'text': f"📊 **Dynamic Chart Generated**\n\n{viz_result.get('explanation', '')}",
+                    'chart': viz_result['chart']
+                }
         
         # Check if this is a SQL-style query (aggregations, filters, etc.)
         sql_keywords = ['average', 'mean', 'sum', 'total', 'count', 'max', 'min', 'top', 'group by', 'where']
