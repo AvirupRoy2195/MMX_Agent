@@ -1,6 +1,11 @@
 import os
 import json
 from typing import Optional
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 class LLMInterface:
     """
@@ -16,11 +21,13 @@ class LLMInterface:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel('gemini-pro')
+                self.model = genai.GenerativeModel('gemini-flash-latest')
                 print("✅ LLM (Gemini) initialized successfully")
             except Exception as e:
                 print(f"⚠️ Could not initialize LLM: {e}")
                 self.use_llm = False
+        else:
+            print("⚠️ No API Key provided. LLM disabled.")
     
     def parse_intent(self, query, context=""):
         """

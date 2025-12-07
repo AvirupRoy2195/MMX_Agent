@@ -18,9 +18,10 @@ class AgenticBIChat:
         self.llm = None
         
         # Initialize NL to SQL if data is available
+        # Initialize NL to SQL if data is available
         if self.orch.data is not None:
-            from src.utils.nl_to_sql import NLtoSQL
-            self.nl_to_sql = NLtoSQL(self.orch.data)
+            from src.agents.nl2sql_agent import NL2SQLAgent
+            self.nl_to_sql = NL2SQLAgent(self.orch.data, self.llm)
         
         # Initialize memory
         from src.utils.memory import ConversationMemory
@@ -29,6 +30,10 @@ class AgenticBIChat:
         # Initialize LLM (optional - works without API key)
         from src.utils.llm_interface import LLMInterface
         self.llm = LLMInterface()
+
+        # Initialize Planning Agent
+        from src.agents.planning_agent import PlanningAgent
+        self.planner = PlanningAgent(self.orch, self.llm)
         
     def set_analysis_results(self, analysis, advanced):
         """Store analysis results for quick access."""
@@ -65,6 +70,25 @@ class AgenticBIChat:
         else:
             # Fallback to keyword matching
             query_type = self._detect_query_type(query)
+
+        # CHECK FOR MULTI-STEP PLAN
+        # Use planner if query seems complex (contains "and", "then", or explicit multi-part request)
+        if self.llm.use_llm and (" and " in query.lower() or " then " in query.lower() or "," in query):
+            plan = self.planner.create_plan(query, context)
+            
+            # If valid plan with multiple steps is created
+            if isinstance(plan, list) and len(plan) > 1:
+                combined_text = "**I've broken this down into steps:**\n\n"
+                final_chart = None
+                
+                for i, step in enumerate(plan):
+                    step_result = self.planner.execute_step(step, self)
+                    combined_text += f"**Step {i+1}: {step.get('description', '')}**\n"
+                    combined_text += f"{step_result['text']}\n\n"
+                    if step_result.get('chart'):
+                        final_chart = step_result['chart'] # Keep the last chart for now
+                
+                return {'text': combined_text, 'chart': final_chart}
         
         query_lower = query.lower()
         
@@ -73,11 +97,12 @@ class AgenticBIChat:
         is_sql_query = any(keyword in query_lower for keyword in sql_keywords)
         
         if is_sql_query and self.nl_to_sql:
-            result = self.nl_to_sql.parse_and_execute(query_lower)
+            result = self.nl_to_sql.execute_query(query_lower)
             
             if result.get('result') is not None and not result.get('error'):
                 text = f"**Query Result**\n\n"
-                text += f"SQL Equivalent: `{result['sql_equivalent']}`\n\n"
+                text += f"Executed Code: `{result['sql_equivalent']}`\n"
+                text += f"Explanation: {result.get('explanation', '')}\n\n"
                 
                 if isinstance(result['result'], pd.DataFrame):
                     text += "**Data:**\n\n"
@@ -217,8 +242,32 @@ class AgenticBIChat:
             chart = self.orch.viz.plot_channel_efficiency(self.orch.data, roi)
             return {'text': text, 'chart': chart}
         
-        # Help/Capabilities
+        # Fallback: Use NL2SQL for any unrecognized query
         else:
+            # Try NL2SQL for flexible query support
+            if self.nl_to_sql and self.llm and self.llm.use_llm:
+                print(f"DEBUG: Fallback to NL2SQL for: {query}")
+                result = self.nl_to_sql.execute_query(query)
+                
+                if result.get('result') is not None and not result.get('error'):
+                    text = f"**Query Result**\n\n"
+                    text += f"Executed Code: `{result['sql_equivalent']}`\n"
+                    text += f"Explanation: {result.get('explanation', '')}\n\n"
+                    
+                    if isinstance(result['result'], pd.DataFrame):
+                        text += "**Data:**\n\n"
+                        text += result['result'].to_markdown(index=False)
+                    else:
+                        text += f"**Result:** {result['result']}"
+                    
+                    return {'text': text}
+                elif result.get('error'):
+                    text = f"I tried to answer your query but encountered an issue:\n\n"
+                    text += f"Error: {result.get('error')}\n\n"
+                    text += "Try rephrasing your question or ask for 'help' to see examples."
+                    return {'text': text}
+            
+            # Final fallback: Show help
             text = """**I'm your Agentic BI Assistant!** 🤖 Ask me about:
 
 📊 **Sales Analysis**

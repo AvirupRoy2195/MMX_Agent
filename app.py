@@ -1,5 +1,9 @@
 import streamlit as st
 import pandas as pd
+import streamlit as st
+import pandas as pd
+from dotenv import load_dotenv
+load_dotenv()
 from src.agents.orchestrator import Orchestrator
 
 # Page Config
@@ -12,6 +16,24 @@ def get_orchestrator():
     return orch
 
 orch = get_orchestrator()
+
+# --- DEBUGGING / CONFIG CHECK ---
+import os
+api_key = os.getenv('GEMINI_API_KEY')
+if not api_key:
+    st.sidebar.warning("⚠️ GEMINI_API_KEY not found!")
+    st.sidebar.info("The Planning & NL2SQL Agents will be disabled. Basic keyword matching only.")
+else:
+    st.sidebar.success("✅ LLM Active")
+    
+    # Debug Info
+    with st.sidebar.expander("Debugger"):
+        st.write(f"Key loaded: {api_key[:10]}...")
+        if st.button("Clear Cache & Restart"):
+            st.cache_resource.clear()
+            st.session_state.clear()
+            st.rerun()
+# --------------------------------
 
 # Run Analysis immediately
 if 'analysis' not in st.session_state:
