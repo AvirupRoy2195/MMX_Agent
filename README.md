@@ -21,15 +21,31 @@ Inspired by [Karpathy's llm-council](https://github.com/karpathy/llm-council), t
 
 | Stage | Description |
 |-------|-------------|
-| **1. First Opinions** | Query sent to 3 diverse LLMs (GPT-4o-mini, Claude-3, Gemini) |
+| **0. Reasoning** | GPT-5 analyzes query type, complexity, and approach |
+| **1. First Opinions** | Claude Opus 4.5, GPT-5, Grok 4.1 respond independently |
 | **2. Peer Review** | Each LLM reviews and ranks the others' responses |
-| **3. Chairman Synthesis** | GPT-4o synthesizes the final, refined answer |
+| **3. Chairman Synthesis** | Claude Opus 4.5 synthesizes the final, refined answer |
+
+**Premium Models Used:**
+- `anthropic/claude-opus-4.5` - Chairman & Council Member
+- `openai/gpt-5` - Reasoning & Council Member  
+- `x-ai/grok-4.1-fast` - Council Member
 
 **Key Features:**
-- 🌐 **Multi-Model Diversity**: Uses OpenRouter to access GPT, Claude, and Gemini
-- 🧠 **Conversation Memory**: Remembers last 10 exchanges for context
+- 🌐 **Multi-Model Diversity**: Uses OpenRouter to access GPT-5, Claude Opus, and Grok
+- 🧠 **Reasoning Stage**: Analyzes query before generating responses
+- 💾 **Conversation Memory**: Remembers last 10 exchanges for context
 - 📊 **Data-Aware**: Council receives real-time analysis metrics
-- 🔄 **Fallback**: Works with Gemini-only if OpenRouter unavailable
+- 🔄 **Robust**: 3 retries with fallback to Gemini
+
+### Component Architecture
+
+| Component | API | Purpose |
+|-----------|-----|----------|
+| **LLM Council** | OpenRouter | Premium multi-model deliberation |
+| **CritiqueAgent** | Gemini | Intelligent model critiques & recommendations |
+| **NL2SQL Agent** | Gemini | Natural language to Pandas query translation |
+| **Planning Agent** | Gemini | Complex query decomposition |
 
 ### Advanced Analytics Capabilities
 
