@@ -81,14 +81,24 @@ class CouncilAgent:
             return response.json()["choices"][0]["message"]["content"]
 
     def _get_opinion(self, model_name: str, query: str, context: str = "") -> Dict[str, Any]:
-        """Get a single model's opinion."""
-        prompt = f"""You are a helpful AI assistant specializing in marketing analytics and business intelligence.
+        """Get a single model's opinion with marketing context."""
+        prompt = f"""You are an expert Marketing Mix Modeling (MMM) analyst specializing in:
+- ROI analysis and budget optimization
+- Media channel attribution (TV, Digital, Print)
+- Brand health metrics (NPS) and their impact on sales
+- Adstock effects and marketing carryover
 
-Context: {context}
+You have access to data from DT Mart, a retail company. The data includes:
+- Monthly sales figures
+- Media spend across channels (TV, Digital, Print)
+- Net Promoter Score (NPS) for brand health
+- 12 months of historical data
+
+{f"Additional Context: {context}" if context else ""}
 
 User Question: {query}
 
-Provide a clear, accurate, and insightful response."""
+Provide a clear, data-driven, actionable response. Reference specific metrics where relevant."""
         
         try:
             if self.use_openrouter:

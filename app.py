@@ -112,7 +112,15 @@ if prompt := st.chat_input("Ask me anything about your marketing data..."):
     # Check if Council Mode is enabled
     if api_key and council_mode and st.session_state.bi_chat.council:
         with st.spinner("🏛️ LLM Council deliberating..."):
-            council_result = st.session_state.bi_chat.council.ask(prompt)
+            # Build context from analysis results
+            context = ""
+            if analysis:
+                context += f"Total Sales: ${analysis.get('kpis', {}).get('total_sales', 0):,.0f}\n"
+                context += f"Top Channel by ROI: {max(analysis.get('roi', {}).items(), key=lambda x: x[1])[0] if analysis.get('roi') else 'Unknown'}\n"
+            if advanced:
+                context += f"Model R²: {advanced.get('model_comparison', {}).get('full', {}).get('r2', 0):.2%}\n"
+            
+            council_result = st.session_state.bi_chat.council.ask(prompt, context=context)
             response = {
                 'text': f"**🏛️ Council Decision**\n\n{council_result['final_response']}",
                 'chart': None
