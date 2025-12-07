@@ -58,6 +58,48 @@ st.title("🤖 MMX Agentic BI Assistant")
 st.markdown("**Your AI-powered Marketing Mix Modeling & Business Intelligence Agent**")
 st.markdown("Ask me anything about your sales, ROI, brand health, or model performance - I'll provide insights with visualizations!")
 
+# Data Preview Section
+with st.expander("📊 Explore Database", expanded=False):
+    st.markdown("### DT Mart Marketing Mix Database")
+    
+    # Get data loader for full access
+    from src.data_loader import DataLoader
+    dl = DataLoader()
+    
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Monthly Data", "Media Spend", "NPS", "Products", "Special Sales"])
+    
+    with tab1:
+        st.markdown("**Monthly Aggregated Data (12 months)**")
+        mmm_data = dl.get_mmm_data()
+        if mmm_data is not None:
+            st.dataframe(mmm_data[['month', 'Total_Sales', 'TV', 'Digital', 'Sponsorship', 'NPS']].head(12), use_container_width=True)
+            st.markdown(f"**Total Sales:** ${mmm_data['Total_Sales'].sum():,.0f}")
+    
+    with tab2:
+        st.markdown("**Media Investment by Channel (millions)**")
+        media = dl.load_media_investment()
+        if media is not None:
+            st.dataframe(media, use_container_width=True)
+    
+    with tab3:
+        st.markdown("**Monthly NPS Scores**")
+        nps = dl.load_nps_data()
+        if nps is not None:
+            st.dataframe(nps, use_container_width=True)
+            st.metric("Average NPS", f"{nps['NPS'].mean():.1f}")
+    
+    with tab4:
+        st.markdown("**Product Catalog (75 products)**")
+        products = dl.load_product_catalog()
+        if products is not None:
+            st.dataframe(products.head(20), use_container_width=True)
+    
+    with tab5:
+        st.markdown("**Special Sale Events (44 dates)**")
+        special = dl.load_special_sales_calendar()
+        if special is not None:
+            st.dataframe(special, use_container_width=True)
+
 # Initialize Agentic BI Chat
 from src.agents.agentic_bi_chat import AgenticBIChat
 
