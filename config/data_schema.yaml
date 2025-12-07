@@ -1,0 +1,344 @@
+# DT Mart Marketing Mix Database Schema
+# This file defines all tables, fields, and their meanings for the MMX Agent
+
+database:
+  name: DT Mart Marketing Mix
+  description: E-commerce marketing mix data for analyzing sales, media spend, and brand health
+  period: July 2015 - June 2016
+  
+tables:
+  # ====================
+  # TRANSACTIONS TABLE
+  # ====================
+  transactions:
+    file: Sales.csv
+    delimiter: tab
+    row_count: 1048575
+    description: Individual sales transaction records
+    
+    columns:
+      ID:
+        type: string
+        description: The unique identification of each SKU (Stock Keeping Unit)
+        example: "ACCCX3S58G7B5F6P"
+        
+      Order_ID:
+        type: string
+        column_name: ID_Order
+        description: The unique identification number of each order
+        example: "3.42E+15"
+        
+      Order_Item_ID:
+        type: string
+        column_name: ID_Item_ordered
+        description: Unique ID for each item in an order. If you order 2 different products under the same order, it generates 2 different Order Item IDs under the same Order ID. Orders are tracked by the Order Item ID.
+        example: "3.42E+15"
+        
+      GMV:
+        type: float
+        description: Gross Merchandise Value or Revenue - the total sales value
+        unit: INR (Indian Rupees)
+        
+      Units:
+        type: integer
+        description: Number of units of the specific product sold
+        
+      Product_Vertical:
+        type: string
+        column_name: product_analytic_vertical
+        description: Product vertical category
+        
+      Product_Sub_Category:
+        type: string
+        column_name: product_analytic_sub_category
+        description: Product sub-category
+        
+      Product_Category:
+        type: string
+        column_name: product_analytic_category
+        description: Product category
+        
+      Product_Super_Category:
+        type: string
+        column_name: product_analytic_super_category
+        description: Product super category (highest level)
+        
+      Delivery_Days_Business:
+        type: integer
+        column_name: deliverybdays
+        description: Number of business days taken to deliver
+        
+      Delivery_Days_Calendar:
+        type: integer
+        column_name: deliverycdays
+        description: Number of calendar days taken to deliver
+        
+      MRP:
+        type: float
+        description: Maximum Retail Price of the product
+        unit: INR
+        
+      Procurement_SLA:
+        type: integer
+        description: Time typically taken to procure the product (in days)
+        unit: days
+
+  # ====================
+  # MONTHLY AGGREGATED DATA
+  # ====================
+  monthly_data:
+    file: Secondfile.csv
+    row_count: 12
+    description: Monthly aggregated sales revenue and media spend
+    
+    columns:
+      month:
+        type: string
+        description: Month and year (e.g., "Jan 2016")
+        primary_key: true
+        
+      Date:
+        type: date
+        description: Date representation of the month
+        
+      # Revenue columns (by product category)
+      Revenue_Camera:
+        type: float
+        description: Monthly revenue from Camera sales
+        unit: INR
+        
+      Revenue_CameraAccessory:
+        type: float
+        description: Monthly revenue from Camera Accessory sales
+        unit: INR
+        
+      Revenue_EntertainmentLarge:
+        type: float
+        description: Monthly revenue from Large Entertainment products
+        unit: INR
+        
+      Revenue_EntertainmentSmall:
+        type: float
+        description: Monthly revenue from Small Entertainment products
+        unit: INR
+        
+      Revenue_GameCDDVD:
+        type: float
+        description: Monthly revenue from Game CD/DVD sales
+        unit: INR
+        
+      Revenue_GamingHardware:
+        type: float
+        description: Monthly revenue from Gaming Hardware sales
+        unit: INR
+        
+      # Media Spend columns
+      TV:
+        type: float
+        description: TV advertising spend
+        unit: INR (millions)
+        marketing_channel: true
+        
+      Digital:
+        type: float
+        description: Digital advertising spend
+        unit: INR (millions)
+        marketing_channel: true
+        
+      Sponsorship:
+        type: float
+        description: Sponsorship spend
+        unit: INR (millions)
+        marketing_channel: true
+        
+      Content.Marketing:
+        type: float
+        description: Content Marketing spend
+        unit: INR (millions)
+        marketing_channel: true
+        
+      Online.marketing:
+        type: float
+        description: Online Marketing spend
+        unit: INR (millions)
+        marketing_channel: true
+        
+      Affiliates:
+        type: float
+        description: Affiliate Marketing spend
+        unit: INR (millions)
+        marketing_channel: true
+        
+      SEM:
+        type: float
+        description: Search Engine Marketing spend
+        unit: INR (millions)
+        marketing_channel: true
+        
+      Radio:
+        type: float
+        description: Radio advertising spend
+        unit: INR (millions)
+        marketing_channel: true
+        
+      Other:
+        type: float
+        description: Other marketing spend
+        unit: INR (millions)
+        marketing_channel: true
+        
+      NPS:
+        type: float
+        description: Net Promoter Score - brand health metric
+        range: [-100, 100]
+        brand_metric: true
+
+  # ====================
+  # MEDIA INVESTMENT
+  # ====================
+  media_investment:
+    file: MediaInvestment.csv
+    row_count: 12
+    description: Monthly media investment by channel (in millions INR)
+    
+    columns:
+      Year:
+        type: integer
+        description: Calendar year
+        
+      Month:
+        type: integer
+        description: Calendar month (1-12)
+
+  # ====================
+  # NPS SCORES
+  # ====================
+  nps_scores:
+    file: MonthlyNPSscore.csv
+    row_count: 12
+    description: Monthly Net Promoter Score tracking
+    
+    columns:
+      Date:
+        type: date
+        description: Month start date
+        
+      NPS:
+        type: float
+        description: Net Promoter Score
+        range: [-100, 100]
+        interpretation: |
+          NPS > 50: Excellent
+          NPS 30-50: Good
+          NPS 0-30: Needs improvement
+          NPS < 0: Critical
+
+  # ====================
+  # PRODUCTS
+  # ====================
+  products:
+    file: ProductList.csv
+    row_count: 75
+    description: Product catalog with sales frequency
+    
+    columns:
+      Product:
+        type: string
+        description: Product name/category
+        
+      Frequency:
+        type: integer
+        description: Number of times this product was ordered
+        
+      Percent:
+        type: float
+        description: Percentage of total orders
+
+  # ====================
+  # SPECIAL SALES
+  # ====================
+  special_sales:
+    file: SpecialSale.csv
+    row_count: 44
+    description: Calendar of special sale events
+    
+    columns:
+      Date:
+        type: date
+        description: Date of special sale
+        
+      Sales_Name:
+        type: string
+        column_name: "Sales Name"
+        description: Name of the sale event
+        examples:
+          - "Big Diwali Sale"
+          - "Independence Sale"
+          - "Christmas & New Year Sale"
+          - "Republic Day"
+          - "Valentine's Day"
+
+# ====================
+# RELATIONSHIPS
+# ====================
+relationships:
+  - from: monthly_data
+    to: media_investment
+    type: one-to-one
+    join_key: "month ↔ (Year, Month)"
+    
+  - from: monthly_data
+    to: nps_scores
+    type: one-to-one
+    join_key: "Date ↔ Date"
+    
+  - from: transactions
+    to: products
+    type: many-to-one
+    join_key: "product_analytic_vertical ↔ Product"
+    
+  - from: monthly_data
+    to: special_sales
+    type: one-to-many
+    join_key: "Date range contains"
+
+# ====================
+# MARKETING MODELS
+# ====================
+models:
+  mmm:
+    name: Marketing Mix Model
+    description: Quantifies the impact of marketing spend on sales
+    
+    short_term_effects:
+      description: Immediate impact of marketing activities on sales
+      model_type: Ridge Regression
+      features:
+        - TV
+        - Digital
+        - Sponsorship
+        - SEM
+        - Online.marketing
+      
+    long_term_effects:
+      description: Carryover/lagged effects using Adstock transformation
+      model_type: Ridge Regression with Adstock
+      decay_rate: 0.5
+      features:
+        - TV_adstock
+        - Digital_adstock
+        - Sponsorship_adstock
+        
+  brand_equity:
+    name: Brand Equity Model
+    description: Measures brand health impact on sales
+    
+    metrics:
+      - NPS (Net Promoter Score)
+      
+    interpretation:
+      nps_coefficient: Sales lift per 1 point NPS increase
+      
+    long_term_nature: |
+      Brand equity effects are inherently long-term.
+      NPS changes take 3-6 months to fully impact sales.

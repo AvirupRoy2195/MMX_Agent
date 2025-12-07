@@ -10,6 +10,7 @@ This agent:
 
 import os
 import json
+import yaml
 import pandas as pd
 from typing import Dict, List, Any, Optional
 
@@ -111,12 +112,22 @@ class SchemaMapperAgent:
         }
     ]
     
-    def __init__(self, data_loader=None):
+    def __init__(self, data_loader=None, schema_path="config/data_schema.yaml"):
         """
         Initialize the Schema Mapper with optional data loader.
         """
         self.data_loader = data_loader
         self.llm = None
+        self.yaml_schema = None
+        
+        # Load YAML schema if available
+        if os.path.exists(schema_path):
+            try:
+                with open(schema_path, 'r', encoding='utf-8') as f:
+                    self.yaml_schema = yaml.safe_load(f)
+                print(f"✅ SchemaMapperAgent: Loaded schema from {schema_path}")
+            except Exception as e:
+                print(f"⚠️ Could not load schema YAML: {e}")
         
         # Initialize Gemini LLM
         gemini_key = os.getenv('GEMINI_API_KEY')
