@@ -66,12 +66,12 @@ graph TB
     Viz -->|Returns Charts| AgenticChat
     AgenticChat -->|Response + Chart| UI
     
-    style AgenticChat fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    style Planner fill:#ffccbc,stroke:#bf360c,stroke-width:2px
-    style NL2SQL fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
-    style Orch fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-    style AdvMMM fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    style Viz fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style AgenticChat fill:#1e88e5,stroke:#0d47a1,stroke-width:3px,color:#fff
+    style Planner fill:#ff5722,stroke:#bf360c,stroke-width:2px,color:#fff
+    style NL2SQL fill:#4caf50,stroke:#1b5e20,stroke-width:2px,color:#fff
+    style Orch fill:#ffc107,stroke:#ff6f00,stroke-width:2px,color:#000
+    style AdvMMM fill:#00bcd4,stroke:#006064,stroke-width:2px,color:#fff
+    style Viz fill:#9c27b0,stroke:#4a148c,stroke-width:2px,color:#fff
 ```
 
 ### Component Details
