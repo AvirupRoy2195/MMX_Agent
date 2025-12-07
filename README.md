@@ -157,6 +157,129 @@ graph TB
     style Schema fill:#607d8b,stroke:#37474f,stroke-width:1px,color:#fff
 ```
 
+### 📊 Data Flow Diagram
+
+The following diagram illustrates how data flows through the MMX Agent system, from raw data sources to final insights:
+
+```mermaid
+flowchart TB
+    subgraph DataSources["📁 Data Sources (Kaggle Dataset)"]
+        Sales["Sales.csv<br/>1M+ Transactions"]
+        Media["MediaInvestment.csv<br/>Monthly Spend"]
+        NPS["MonthlyNPSscore.csv<br/>NPS Scores"]
+        Products["ProductList.csv<br/>Product Catalog"]
+        Special["SpecialSale.csv<br/>Sale Events"]
+        Monthly["Secondfile.csv<br/>Pre-aggregated"]
+    end
+
+    subgraph DataLayer["🔄 Data Layer"]
+        DL["DataLoader<br/>Load & Cache"]
+        Transform["Data Transformation<br/>Merge & Aggregate"]
+        Tables["In-Memory Tables<br/>monthly_data, media_investment,<br/>nps_scores, products, special_sales"]
+    end
+
+    subgraph AgentLayer["🤖 Agent Processing Layer"]
+        Schema["SchemaMapperAgent<br/>Table Mapping"]
+        NL2SQL["NL2SQLAgent<br/>Query Generation"]
+        Explorer["ExplorerAgent<br/>KPIs & Correlations"]
+        MMX["MMXAgent<br/>Basic MMM"]
+        AdvMMM["AdvancedMMM<br/>Adstock & Brand"]
+        Brand["BrandAgent<br/>NPS Analysis"]
+    end
+
+    subgraph OutputLayer["📈 Output Layer"]
+        Viz["VizAgent<br/>Chart Generation"]
+        Insights["Insights & Metrics"]
+        Response["Chat Response"]
+    end
+
+    Sales --> DL
+    Media --> DL
+    NPS --> DL
+    Products --> DL
+    Special --> DL
+    Monthly --> DL
+
+    DL --> Transform
+    Transform --> Tables
+
+    Tables --> Schema
+    Tables --> Explorer
+    Tables --> MMX
+    Tables --> AdvMMM
+    Tables --> Brand
+    
+    Schema --> NL2SQL
+    NL2SQL --> Insights
+
+    Explorer --> Insights
+    MMX --> Insights
+    AdvMMM --> Insights
+    Brand --> Insights
+
+    Insights --> Viz
+    Viz --> Response
+    Insights --> Response
+
+    style DataSources fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style DataLayer fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style AgentLayer fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style OutputLayer fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+```
+
+### 🔀 Query Processing Sequence
+
+This sequence diagram shows how a user query is processed through the system:
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant UI as Streamlit UI
+    participant Chat as AgenticBIChat
+    participant Plan as PlanningAgent
+    participant Schema as SchemaMapper
+    participant NL2SQL as NL2SQLAgent
+    participant Orch as Orchestrator
+    participant Data as DataLoader
+    participant Viz as VizAgent
+    participant LLM as Gemini LLM
+
+    U->>UI: Natural Language Query
+    UI->>Chat: process_query()
+    
+    alt Complex Multi-Step Query
+        Chat->>Plan: decompose_query()
+        Plan->>LLM: Analyze & Plan
+        LLM-->>Plan: Execution Steps
+        Plan-->>Chat: Step-by-step Plan
+    end
+
+    Chat->>Schema: map_query_to_tables()
+    Schema->>LLM: Identify Tables
+    LLM-->>Schema: Table Mapping
+    Schema-->>Chat: Relevant Tables & Joins
+
+    alt Data Query
+        Chat->>NL2SQL: generate_code()
+        NL2SQL->>LLM: NL to Pandas
+        LLM-->>NL2SQL: Python Code
+        NL2SQL->>Data: Execute Query
+        Data-->>NL2SQL: DataFrame Results
+        NL2SQL-->>Chat: Query Results
+    else Analytics Query
+        Chat->>Orch: run_analysis()
+        Orch->>Data: get_mmm_data()
+        Data-->>Orch: Aggregated Data
+        Orch-->>Chat: Analytics Results
+    end
+
+    Chat->>Viz: generate_chart()
+    Viz-->>Chat: Plotly Figure
+    
+    Chat-->>UI: Response + Chart
+    UI-->>U: Display Results
+```
+
 ### Component Details
 
 #### **Agentic BI Chat** (`src/agents/agentic_bi_chat.py`)
