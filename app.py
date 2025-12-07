@@ -125,13 +125,22 @@ if prompt := st.chat_input("Ask me anything about your marketing data..."):
                 'text': f"**🏛️ Council Decision**\n\n{council_result['final_response']}",
                 'chart': None
             }
-            # Show intermediate results in expander
-            with st.expander("Council Deliberation Details"):
-                st.markdown("### First Opinions")
+            # Show reasoning and deliberation details
+            with st.expander("🧠 Council Reasoning & Deliberation", expanded=False):
+                # Show reasoning
+                if council_result.get('reasoning'):
+                    st.markdown("### 🧠 Query Analysis")
+                    reasoning = council_result['reasoning']
+                    st.json(reasoning)
+                
+                st.markdown("### 💬 Expert Opinions")
                 for opinion in council_result['opinions']:
                     if opinion['response']:
-                        st.markdown(f"**{opinion['model']}**: {opinion['response'][:300]}...")
-                st.markdown("### Peer Reviews")
+                        model_name = opinion['model'].split('/')[-1]
+                        with st.expander(f"🤖 {model_name}"):
+                            st.markdown(opinion['response'][:1000] + "..." if len(opinion['response']) > 1000 else opinion['response'])
+                
+                st.markdown("### 🔍 Peer Reviews")
                 for review in council_result['reviews']:
                     if review['review']:
                         st.json(review['review'])
