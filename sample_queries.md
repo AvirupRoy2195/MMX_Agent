@@ -43,3 +43,16 @@
 ## General
 27. "Help"
 28. "What can you do?"
+
+## Flexible Data Queries (NL2SQL)
+29. "Show me the table rows in the data"
+30. "What are the column names?"
+31. "List all months where TV spend was above 50000"
+32. "Rank channels by total contribution"
+33. "What is the average sales?"
+
+## Multi-Step Queries (Planning Agent)
+34. "First show me sales trend, then tell me the best ROI channel"
+35. "Compare model performance and then summarize the feedback"
+36. "Analyze brand health and then show me correlations"
+

@@ -8,6 +8,12 @@ An intelligent **AI-powered Marketing Mix Modeling and Business Intelligence Age
 - **Single Agent Interface**: No complex dashboards - just chat with the AI
 - **Dynamic Visualizations**: Agent generates charts on-demand based on your questions
 - **Natural Language Queries**: Ask questions like "Show me ROI decomposition" or "Which channel should I optimize?"
+- **Intelligent Fallback**: Uses LLM-powered NL2SQL for any unrecognized query
+
+### Agentic Capabilities (NEW!)
+- **Planning Agent**: Breaks down complex, multi-step queries into executable plans
+- **NL2SQL Agent**: Converts natural language to Pandas code for flexible data queries
+- **LLM Integration**: Powered by Google Gemini for enhanced understanding
 
 ### Advanced Analytics Capabilities
 
@@ -36,7 +42,12 @@ graph TB
     User[User] -->|Natural Language Query| UI[Streamlit Chat UI]
     UI --> AgenticChat[Agentic BI Chat Agent]
     
+    AgenticChat -->|Complex Queries| Planner[Planning Agent<br/>Query Decomposition]
+    AgenticChat -->|Data Queries| NL2SQL[NL2SQL Agent<br/>Pandas Code Gen]
     AgenticChat -->|Coordinates| Orch[Orchestrator]
+    
+    Planner -->|Step Execution| AgenticChat
+    NL2SQL -->|Results| AgenticChat
     
     Orch --> Explorer[Explorer Agent<br/>BI Analytics]
     Orch --> MMX[MMX Agent<br/>Basic Modeling]
@@ -56,6 +67,8 @@ graph TB
     AgenticChat -->|Response + Chart| UI
     
     style AgenticChat fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    style Planner fill:#ffccbc,stroke:#bf360c,stroke-width:2px
+    style NL2SQL fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
     style Orch fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
     style AdvMMM fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     style Viz fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
@@ -88,6 +101,8 @@ graph TB
 
 #### **Utilities**
 - **Adstock Utils** (`src/utils/adstock.py`): Geometric adstock transformations
+- **LLM Interface** (`src/utils/llm_interface.py`): Google Gemini integration
+- **Memory** (`src/utils/memory.py`): Conversational context tracking
 
 ## 🚀 Getting Started
 
@@ -105,7 +120,7 @@ graph TB
 
 2. **Install dependencies:**
    ```bash
-   pip install streamlit pandas scikit-learn plotly kagglehub
+   pip install streamlit pandas scikit-learn plotly kagglehub python-dotenv google-generativeai
    ```
 
 3. **Download data:**
@@ -120,6 +135,17 @@ streamlit run app.py
 ```
 
 The agent will open at `http://localhost:8501`
+
+### LLM Setup (Optional but Recommended)
+
+To enable full Planning & NL2SQL capabilities:
+
+1. Get a Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create a `.env` file in the project root:
+   ```
+   GEMINI_API_KEY=your_api_key_here
+   ```
+3. Restart the app
 
 ## 💬 Sample Queries
 
@@ -151,6 +177,16 @@ The agent will open at `http://localhost:8501`
 ### Correlations
 - "Show correlations"
 - "Relationship between channels"
+
+### Flexible Data Queries (NL2SQL)
+- "Show me the table rows in the data"
+- "What are the column names?"
+- "List all months where TV spend was above 50000"
+- "Rank channels by total contribution"
+
+### Multi-Step Queries (Planning Agent)
+- "First show me sales trend, then tell me the best ROI channel"
+- "Compare model performance and then summarize the feedback"
 
 ## 📊 Technical Details
 
