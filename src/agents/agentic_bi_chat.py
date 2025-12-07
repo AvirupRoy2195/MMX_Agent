@@ -50,6 +50,16 @@ class AgenticBIChat:
             self.orch.viz.set_nl2sql(self.nl_to_sql)
             print("✅ VizAgent linked with NL2SQL for dynamic charts")
         
+        # Initialize Schema Mapper Agent for table mapping
+        self.schema_mapper = None
+        try:
+            from src.agents.schema_mapper_agent import SchemaMapperAgent
+            from src.data_loader import DataLoader
+            self.schema_mapper = SchemaMapperAgent(data_loader=DataLoader())
+            print("✅ SchemaMapperAgent initialized")
+        except Exception as e:
+            print(f"⚠️ SchemaMapper not available: {e}")
+        
     def set_analysis_results(self, analysis, advanced):
         """Store analysis results for quick access."""
         self.analysis = analysis
@@ -122,7 +132,15 @@ class AgenticBIChat:
         
         # Check if this is a SQL-style query (aggregations, filters, etc.)
         sql_keywords = ['average', 'mean', 'sum', 'total', 'count', 'max', 'min', 'top', 'group by', 'where']
+        table_keywords = ['from', 'table', 'join', 'products', 'transactions', 'special sales', 'nps']
         is_sql_query = any(keyword in query_lower for keyword in sql_keywords)
+        needs_schema_mapping = any(keyword in query_lower for keyword in table_keywords)
+        
+        # Use SchemaMapper for multi-table queries
+        if needs_schema_mapping and self.schema_mapper:
+            mapping = self.schema_mapper.map_query_to_tables(query)
+            if mapping.get('additional_tables'):
+                schema_info = f"\n\n**🗺️ Table Mapping:**\nPrimary: `{mapping.get('primary_table')}`\nJoins: {mapping.get('additional_tables')}\n"
         
         if is_sql_query and self.nl_to_sql:
             result = self.nl_to_sql.execute_query(query_lower)
