@@ -118,7 +118,11 @@ graph TB
     AgenticChat -->|Complex Queries| Planner[Planning Agent<br/>Query Decomposition]
     AgenticChat -->|Data Queries| NL2SQL[NL2SQL Agent<br/>Pandas Code Gen]
     AgenticChat -->|Council Mode| Council[LLM Council<br/>Multi-Model Deliberation]
+    AgenticChat -->|Table Mapping| SchemaMapper[Schema Mapper Agent<br/>Table Relationships]
     AgenticChat -->|Coordinates| Orch[Orchestrator]
+    
+    SchemaMapper -->|YAML Schema| Schema[(config/data_schema.yaml)]
+    SchemaMapper -->|Mapped Tables| NL2SQL
     
     Council -->|GPT + Claude + Gemini| AgenticChat
     
@@ -146,9 +150,11 @@ graph TB
     style Planner fill:#ff5722,stroke:#bf360c,stroke-width:2px,color:#fff
     style NL2SQL fill:#4caf50,stroke:#1b5e20,stroke-width:2px,color:#fff
     style Council fill:#e91e63,stroke:#880e4f,stroke-width:2px,color:#fff
+    style SchemaMapper fill:#00e676,stroke:#00c853,stroke-width:2px,color:#000
     style Orch fill:#ffc107,stroke:#ff6f00,stroke-width:2px,color:#000
     style AdvMMM fill:#00bcd4,stroke:#006064,stroke-width:2px,color:#fff
     style Viz fill:#9c27b0,stroke:#4a148c,stroke-width:2px,color:#fff
+    style Schema fill:#607d8b,stroke:#37474f,stroke-width:1px,color:#fff
 ```
 
 ### Component Details
